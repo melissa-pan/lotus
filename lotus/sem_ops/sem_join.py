@@ -389,24 +389,29 @@ def join_optimizer(
         lotus.logger.debug("Helper model is not supported yet. Default to similarity join.")
 
     # Learn search-filter thresholds
-    sf_helper_join = run_sem_sim_join(l1, l2, col1_label, col2_label)
-    sf_t_pos, sf_t_neg, sf_learn_cost = learn_join_cascade_threshold(
-        sf_helper_join,
-        col1_label,
-        col2_label,
-        model,
-        user_instruction,
-        cascade_args,
-        examples_multimodal_data=examples_multimodal_data,
-        examples_answers=examples_answers,
-        cot_reasoning=cot_reasoning,
-        default=default,
-        strategy=strategy,
-    )
-    sf_high_conf = sf_helper_join[sf_helper_join["_scores"] >= sf_t_pos]
-    sf_high_conf_neg = len(sf_helper_join[sf_helper_join["_scores"] <= sf_t_neg])
-    sf_low_conf = sf_helper_join[(sf_helper_join["_scores"] < sf_t_pos) & (sf_helper_join["_scores"] > sf_t_neg)]
-    sf_cost = len(sf_low_conf)
+    # sf_helper_join = run_sem_sim_join(l1, l2, col1_label, col2_label)
+    # sf_t_pos, sf_t_neg, sf_learn_cost = learn_join_cascade_threshold(
+    #     sf_helper_join,
+    #     col1_label,
+    #     col2_label,
+    #     model,
+    #     user_instruction,
+    #     cascade_args,
+    #     examples_multimodal_data=examples_multimodal_data,
+    #     examples_answers=examples_answers,
+    #     cot_reasoning=cot_reasoning,
+    #     default=default,
+    #     strategy=strategy,
+    # )
+    # sf_high_conf = sf_helper_join[sf_helper_join["_scores"] >= sf_t_pos]
+    # sf_high_conf_neg = len(sf_helper_join[sf_helper_join["_scores"] <= sf_t_neg])
+    # sf_low_conf = sf_helper_join[(sf_helper_join["_scores"] < sf_t_pos) & (sf_helper_join["_scores"] > sf_t_neg)]
+    # sf_cost = len(sf_low_conf)
+    sf_learn_cost = 0
+    sf_cost = float("inf")
+    sf_high_conf_neg = 0
+    sf_low_conf = pd.DataFrame()
+    sf_high_conf = pd.DataFrame()
 
     # Learn map-search-filter thresholds
     mapped_l1, mapped_col1_label = map_l1_to_l2(
@@ -431,6 +436,11 @@ def join_optimizer(
     msf_low_conf = msf_helper_join[(msf_helper_join["_scores"] < msf_t_pos) & (msf_helper_join["_scores"] > msf_t_neg)]
     msf_cost = len(msf_low_conf)
     msf_learn_cost += len(l1)  # cost from map l1 to l2
+    # msf_learn_cost = 0
+    # msf_cost = float("inf")
+    # msf_high_conf_neg = 0
+    # msf_high_conf = pd.DataFrame()
+    # msf_low_conf = pd.DataFrame()
 
     # Select the cheaper join plan
     lotus.logger.info("Join Optimizer: plan cost analysis:")
